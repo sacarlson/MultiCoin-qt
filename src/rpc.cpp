@@ -13,7 +13,7 @@
 #include <boost/iostreams/stream.hpp>
 #include <boost/algorithm/string.hpp>
 #ifdef USE_SSL
-#include <boost/asio/ssl.hpp>
+#include <boost/asio/ssl.hpp> 
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
 typedef boost::asio::ssl::stream<boost::asio::ip::tcp::socket> SSLStream;
@@ -46,13 +46,13 @@ Object JSONRPCError(int code, const string& message)
 }
 
 
-void PrintConsole(const std::string &format, ...)
+void PrintConsole(const char* format, ...)
 {
     char buffer[50000];
     int limit = sizeof(buffer);
     va_list arg_ptr;
     va_start(arg_ptr, format);
-    int ret = _vsnprintf(buffer, limit, format.c_str(), arg_ptr);
+    int ret = _vsnprintf(buffer, limit, format, arg_ptr);
     va_end(arg_ptr);
     if (ret < 0 || ret >= limit)
     {
@@ -332,15 +332,12 @@ Value getnewaddress(const Array& params, bool fHelp)
     // Generate a new key that is added to wallet
     string strAddress = PubKeyToAddress(pwalletMain->GetKeyFromKeyPool());
 
-    // This could be done in the same main CS as GetKeyFromKeyPool.
-    CRITICAL_BLOCK(pwalletMain->cs_mapAddressBook)
-       pwalletMain->SetAddressBookName(strAddress, strAccount);
-
+    pwalletMain->SetAddressBookName(strAddress, strAccount);
     return strAddress;
 }
 
 
-// requires cs_main, cs_mapWallet, cs_mapAddressBook locks
+// requires cs_main, cs_mapWallet locks
 string GetAccountAddress(string strAccount, bool bForceNew=false)
 {
     string strAddress;
@@ -396,7 +393,6 @@ Value getaccountaddress(const Array& params, bool fHelp)
 
     CRITICAL_BLOCK(cs_main)
     CRITICAL_BLOCK(pwalletMain->cs_mapWallet)
-    CRITICAL_BLOCK(pwalletMain->cs_mapAddressBook)
     {
         ret = GetAccountAddress(strAccount);
     }
@@ -435,10 +431,9 @@ Value setaccount(const Array& params, bool fHelp)
             if (strAddress == GetAccountAddress(strOldAccount))
                 GetAccountAddress(strOldAccount, true);
         }
-
-        pwalletMain->SetAddressBookName(strAddress, strAccount);
     }
 
+    pwalletMain->SetAddressBookName(strAddress, strAccount);
     return Value::null;
 }
 
@@ -535,6 +530,80 @@ Value sendtoaddress(const Array& params, bool fHelp)
     }
 
     return wtx.GetHash().GetHex();
+}
+
+Value sendmultisign(const Array& params, bool fHelp)
+{
+    if (fHelp || params.size() < 2 || params.size() > 4)
+        throw runtime_error(
+            "sendmultisign <multisignaddr> <amount> [comment] [comment-to]\n"
+            "<multisignaddr> is of the form <n>,<addr>,<addr...>\n"
+            "where <n> of the addresses must sign to redeem the multisign\n"
+            "<amount> is a real and is rounded to the nearest 0.00000001"
+            );
+
+    string strAddress = params[0].get_str();
+
+    // Amount
+    int64 nAmount = AmountFromValue(params[1]);
+
+    // Wallet comments
+    CWalletTx wtx;
+    if (params.size() > 2 && params[2].type() != null_type && !params[2].get_str().empty())
+        wtx.mapValue["comment"] = params[2].get_str();
+    if (params.size() > 3 && params[3].type() != null_type && !params[3].get_str().empty())
+        wtx.mapValue["to"]      = params[3].get_str();
+
+    CRITICAL_BLOCK(cs_main)
+    {
+        string strError = pwalletMain->SendMoneyToMultisign(strAddress, nAmount, wtx);
+        if (strError != "")
+            throw JSONRPCError(-4, strError);
+    }
+
+    return wtx.GetHash().GetHex();
+}
+
+Value redeemmultisign(const Array& params, bool fHelp)
+{
+    if (fHelp || params.size() < 3 || params.size() > 4)
+        throw runtime_error(
+            "redeemmultisign <inputtx> <addr> <amount> [<txhex>]\n"
+            "where <inputtx> is the multisign transaction ID\n"
+            "<addr> is the destination bitcoin address\n"
+            "<txhex> is a partially signed transaction\n"
+            "the output is either ['partial', <txhex>] if more signatures are needed\n"
+            "or ['complete', <txid>] if the transaction was broadcast\n"
+            );
+
+    string strInputTx = params[0].get_str();
+    string strAddress = params[1].get_str();
+
+    // Amount
+    int64 nAmount = AmountFromValue(params[2]);
+
+    string strPartialTx;
+
+    if (params.size() == 4)
+    {
+        strPartialTx = params[3].get_str();
+    }
+
+    uint256 nInputTx;
+    nInputTx.SetHex(strInputTx);
+
+    CWalletTx wtx;
+
+    CRITICAL_BLOCK(cs_main)
+    {
+        pair<string,string> result = pwalletMain->SendMoneyFromMultisign(strAddress, nInputTx, nAmount, strPartialTx, wtx);
+        if (result.first == "error")
+            throw JSONRPCError(-4, result.second);
+        Array ret;
+        ret.push_back(result.first);
+        ret.push_back(result.second);
+        return ret;
+    }
 }
 
 
@@ -843,7 +912,7 @@ Value sendmany(const Array& params, bool fHelp)
         CScript scriptPubKey;
         if (!scriptPubKey.SetBitcoinAddress(strAddress))
             throw JSONRPCError(-5, string("Invalid bitcoin address:")+strAddress);
-        int64 nAmount = AmountFromValue(s.value_);
+        int64 nAmount = AmountFromValue(s.value_); 
         totalAmount += nAmount;
 
         vecSend.push_back(make_pair(scriptPubKey, nAmount));
@@ -1161,7 +1230,7 @@ Value listtransactions(const Array& params, bool fHelp)
         }
         // ret is now newest to oldest
     }
-
+    
     // Make sure we return only last nCount items (sends-to-self might give us an extra):
     if (ret.size() > nCount)
     {
@@ -1470,6 +1539,8 @@ pair<string, rpcfn_type> pCallTable[] =
     make_pair("getwork",               &getwork),
     make_pair("listaccounts",          &listaccounts),
     make_pair("settxfee",              &settxfee),
+    make_pair("sendmultisign",         &sendmultisign),
+    make_pair("redeemmultisign",       &redeemmultisign),
 };
 map<string, rpcfn_type> mapCallTable(pCallTable, pCallTable + sizeof(pCallTable)/sizeof(pCallTable[0]));
 
@@ -1537,7 +1608,7 @@ string rfc1123Time()
     return string(buffer);
 }
 
-static string HTTPReply(int nStatus, const string& strMsg)
+string HTTPReply(int nStatus, const string& strMsg)
 {
     if (nStatus == 401)
         return strprintf("HTTP/1.0 401 Authorization Required\r\n"
@@ -1559,7 +1630,6 @@ static string HTTPReply(int nStatus, const string& strMsg)
     string strStatus;
          if (nStatus == 200) strStatus = "OK";
     else if (nStatus == 400) strStatus = "Bad Request";
-    else if (nStatus == 403) strStatus = "Forbidden";
     else if (nStatus == 404) strStatus = "Not Found";
     else if (nStatus == 500) strStatus = "Internal Server Error";
     return strprintf(
@@ -1825,9 +1895,9 @@ void ThreadRPCServer2(void* parg)
     {
         string strWhatAmI = "To use bitcoind";
         if (mapArgs.count("-server"))
-            strWhatAmI = strprintf("To use the %s option", "\"-server\"");
+            strWhatAmI = strprintf(_("To use the %s option"), "\"-server\"");
         else if (mapArgs.count("-daemon"))
-            strWhatAmI = strprintf("To use the %s option", "\"-daemon\"");
+            strWhatAmI = strprintf(_("To use the %s option"), "\"-daemon\"");
         PrintConsole(
             _("Warning: %s, you must set rpcpassword=<password>\nin the configuration file: %s\n"
               "If the file does not exist, create it with owner-readable-only file permissions.\n"),
@@ -1893,12 +1963,7 @@ void ThreadRPCServer2(void* parg)
 
         // Restrict callers by IP
         if (!ClientAllowed(peer.address().to_string()))
-        {
-            // Only send a 403 if we're not using SSL to prevent a DoS during the SSL handshake.
-            if (!fUseSSL)
-                stream << HTTPReply(403, "") << std::flush;
             continue;
-        }
 
         map<string, string> mapHeaders;
         string strRequest;
@@ -2002,8 +2067,8 @@ Object CallRPC(const string& strMethod, const Array& params)
 {
     if (mapArgs["-rpcuser"] == "" && mapArgs["-rpcpassword"] == "")
         throw runtime_error(strprintf(
-            "You must set rpcpassword=<password> in the configuration file:\n%s\n"
-              "If the file does not exist, create it with owner-readable-only file permissions.",
+            _("You must set rpcpassword=<password> in the configuration file:\n%s\n"
+              "If the file does not exist, create it with owner-readable-only file permissions."),
                 GetConfigFile().c_str()));
 
     // Connect to localhost
@@ -2109,6 +2174,8 @@ int CommandLineRPC(int argc, char *argv[])
         if (strMethod == "setgenerate"            && n > 0) ConvertTo<bool>(params[0]);
         if (strMethod == "setgenerate"            && n > 1) ConvertTo<boost::int64_t>(params[1]);
         if (strMethod == "sendtoaddress"          && n > 1) ConvertTo<double>(params[1]);
+        if (strMethod == "sendmultisign"          && n > 1) ConvertTo<double>(params[1]);
+        if (strMethod == "redeemmultisign"        && n > 2) ConvertTo<double>(params[2]);
         if (strMethod == "settxfee"               && n > 0) ConvertTo<double>(params[0]);
         if (strMethod == "getamountreceived"      && n > 1) ConvertTo<boost::int64_t>(params[1]); // deprecated
         if (strMethod == "getreceivedbyaddress"   && n > 1) ConvertTo<boost::int64_t>(params[1]);

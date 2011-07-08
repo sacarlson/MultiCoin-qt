@@ -9,15 +9,6 @@
 #include "init.h"
 #include "strlcpy.h"
 
-#ifdef __WXMSW__
-#include <string.h>
-// This file can be downloaded as a part of the Windows Platform SDK
-// and is required for Bitcoin binaries to work properly on versions
-// of Windows before XP.  If you are doing builds of Bitcoin for
-// public release, you should uncomment this line.
-//#include <WSPiApi.h>
-#endif
-
 #ifdef USE_UPNP
 #include <miniupnpc/miniwget.h>
 #include <miniupnpc/miniupnpc.h>
@@ -69,7 +60,10 @@ int nConnectTimeout = 5000;
 CAddress addrProxy("127.0.0.1",9050);
 
 
-
+unsigned short GetSendPort()
+{
+    return (unsigned short)(GetArg("-portsend", GetDefaultPort()));
+}
 
 unsigned short GetListenPort()
 {
@@ -157,7 +151,7 @@ bool ConnectSocket(const CAddress& addrConnect, SOCKET& hSocketRet, int nTimeout
             }
             if (nRet != 0)
             {
-                printf("connect() failed after select(): %s\n",strerror(nRet));
+                printf("connect() failed after select(): %i\n",nRet);
                 closesocket(hSocket);
                 return false;
             }
@@ -924,7 +918,7 @@ void ThreadSocketHandler2(void* parg)
                     CDataStream& vRecv = pnode->vRecv;
                     unsigned int nPos = vRecv.size();
 
-                    if (nPos > ReceiveBufferSize()) {
+                    if (nPos > 1000*GetArg("-maxreceivebuffer", 10*1000)) {
                         if (!pnode->fDisconnect)
                             printf("socket recv flood control disconnect (%d bytes)\n", vRecv.size());
                         pnode->CloseSocketDisconnect();
@@ -989,7 +983,7 @@ void ThreadSocketHandler2(void* parg)
                                 pnode->CloseSocketDisconnect();
                             }
                         }
-                        if (vSend.size() > SendBufferSize()) {
+                        if (vSend.size() > 1000*GetArg("-maxsendbuffer", 10*1000)) {
                             if (!pnode->fDisconnect)
                                 printf("socket send flood control disconnect (%d bytes)\n", vSend.size());
                             pnode->CloseSocketDisconnect();
@@ -1148,29 +1142,25 @@ void MapPort(bool fMapPort)
 static const char *strDNSSeed[] = {
     "bitseed.xf2.org",
     "bitseed.bitcoin.org.uk",
-    "dnsseed.bluematt.me",
 };
 
 void DNSAddressSeed()
 {
     int found = 0;
 
-    if (!fTestNet)
-    {
-        printf("Loading addresses from DNS seeds (could take a while)\n");
+    printf("Loading addresses from DNS seeds (could take a while)\n");
 
-        for (int seed_idx = 0; seed_idx < ARRAYLEN(strDNSSeed); seed_idx++) {
-            vector<CAddress> vaddr;
-            if (Lookup(strDNSSeed[seed_idx], vaddr, NODE_NETWORK, -1, true))
+    for (int seed_idx = 0; seed_idx < ARRAYLEN(strDNSSeed); seed_idx++) {
+        vector<CAddress> vaddr;
+        if (Lookup(strDNSSeed[seed_idx], vaddr, NODE_NETWORK, -1, true))
+        {
+            BOOST_FOREACH (CAddress& addr, vaddr)
             {
-                BOOST_FOREACH (CAddress& addr, vaddr)
+                if (addr.GetByte(3) != 127)
                 {
-                    if (addr.GetByte(3) != 127)
-                    {
-                        addr.nTime = 0;
-                        AddAddress(addr);
-                        found++;
-                    }
+                    addr.nTime = 0;
+                    AddAddress(addr);
+                    found++;
                 }
             }
         }
@@ -1178,7 +1168,6 @@ void DNSAddressSeed()
 
     printf("%d addresses found from DNS seeds\n", found);
 }
-
 
 
 unsigned int pnSeed[] =
@@ -1224,7 +1213,6 @@ unsigned int pnSeed[] =
     0x0f097059, 0x69ac957c, 0x366d8453, 0xb1ba2844, 0x8857f081, 0x70b5be63, 0xc545454b, 0xaf36ded1,
     0xb5a4b052, 0x21f062d1, 0x72ab89b2, 0x74a45318, 0x8312e6bc, 0xb916965f, 0x8aa7c858, 0xfe7effad,
 };
-
 
 
 void ThreadOpenConnections(void* parg)
@@ -1385,9 +1373,17 @@ void ThreadOpenConnections2(void* parg)
                 int64 nSinceLastTry = GetAdjustedTime() - addr.nLastTry;
 
                 // Randomize the order in a deterministic way, putting the standard port first
-                int64 nRandomizer = (uint64)(nStart * 4951 + addr.nLastTry * 9567851 + addr.ip * 7789) % (2 * 60 * 60);
-                if (addr.port != htons(GetDefaultPort()))
+                int64 nRandomizer = (uint64)(nStart * 4951 + addr.nLastTry * 9567851 + addr.ip * 7789) % (2 * 60 * 60);                
+
+                if (addr.port != GetSendPort() && GetBoolArg("-standard_ports_only"))
+                {
+                    continue;
+                }
+                else
+                {
+                 if (addr.port != GetSendPort())
                     nRandomizer += 2 * 60 * 60;
+                }
 
                 // Last seen  Base retry frequency
                 //   <1 hour   10 min
@@ -1600,7 +1596,7 @@ bool BindListenPort(string& strError)
     {
         int nErr = WSAGetLastError();
         if (nErr == WSAEADDRINUSE)
-            strError = strprintf(_("Unable to bind to port %d on this computer.  Bitcoin is probably already running."), ntohs(sockaddr.sin_port));
+            strError = strprintf("Unable to bind to port %d on this computer.  Bitcoin is probably already running.", ntohs(sockaddr.sin_port));
         else
             strError = strprintf("Error: Unable to bind to port %d on this computer (bind returned error %d)", ntohs(sockaddr.sin_port), nErr);
         printf("%s\n", strError.c_str());

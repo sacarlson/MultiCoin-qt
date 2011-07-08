@@ -55,19 +55,19 @@ static string FormatTxStatus(const CWalletTx& wtx)
     if (!wtx.IsFinal())
     {
         if (wtx.nLockTime < 500000000)
-            return strprintf(_("Open for %d blocks"), nBestHeight - wtx.nLockTime);
+            return strprintf("Open for %d blocks", nBestHeight - wtx.nLockTime);
         else
-            return strprintf(_("Open until %s"), GUIUtil::DateTimeStr(wtx.nLockTime).toStdString().c_str());
+            return strprintf("Open until %s", GUIUtil::DateTimeStr(wtx.nLockTime).toStdString().c_str());
     }
     else
     {
         int nDepth = wtx.GetDepthInMainChain();
         if (GetAdjustedTime() - wtx.nTimeReceived > 2 * 60 && wtx.GetRequestCount() == 0)
-            return strprintf(_("%d/offline?"), nDepth);
+            return strprintf("%d/offline?", nDepth);
         else if (nDepth < 6)
-            return strprintf(_("%d/unconfirmed"), nDepth);
+            return strprintf("%d/unconfirmed", nDepth);
         else
-            return strprintf(_("%d confirmations"), nDepth);
+            return strprintf("%d confirmations", nDepth);
     }
 }
 
@@ -93,9 +93,9 @@ string TransactionDesc::toHTML(CWallet *wallet, CWalletTx &wtx)
             if (nRequests == 0)
                 strHTML += _(", has not been successfully broadcast yet");
             else if (nRequests == 1)
-                strHTML += strprintf(_(", broadcast through %d node"), nRequests);
+                strHTML += strprintf(", broadcast through %d node", nRequests);
             else
-                strHTML += strprintf(_(", broadcast through %d nodes"), nRequests);
+                strHTML += strprintf(", broadcast through %d nodes", nRequests);
         }
         strHTML += "<br>";
 
@@ -176,7 +176,7 @@ string TransactionDesc::toHTML(CWallet *wallet, CWalletTx &wtx)
                 nUnmatured += wallet->GetCredit(txout);
             strHTML += _("<b>Credit:</b> ");
             if (wtx.IsInMainChain())
-                strHTML += strprintf(_("(%s matures in %d more blocks)"), FormatMoney(nUnmatured).c_str(), wtx.GetBlocksToMaturity());
+                strHTML += strprintf("(%s matures in %d more blocks)", FormatMoney(nUnmatured).c_str(), wtx.GetBlocksToMaturity());
             else
                 strHTML += _("(not accepted)");
             strHTML += "<br>";

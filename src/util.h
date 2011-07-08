@@ -64,8 +64,8 @@ typedef unsigned long long  uint64;
 #endif
 
 // This is needed because the foreach macro can't get over the comma in pair<t1, t2>
+//#define PAIRTYPE(t1, t2)    pair<t1, t2>
 #define PAIRTYPE(t1, t2)    std::pair<t1, t2>
-
 // Used to bypass the rule against non-const reference to temporary
 // where it makes sense with wrappers such as CFlatData or CTxDB
 template<typename T>
@@ -139,12 +139,14 @@ inline int myclosesocket(SOCKET& hSocket)
     return ret;
 }
 #define closesocket(s)      myclosesocket(s)
+
 #if !defined(QT_GUI) && !defined(GUI)
 inline const char* _(const char* psz)
 {
     return psz;
 }
 #endif
+
 
 
 
@@ -167,15 +169,17 @@ extern bool fServer;
 extern bool fCommandLine;
 extern std::string strMiscWarning;
 extern bool fTestNet;
+extern bool fTestNet_config;
 extern bool fNoListen;
 extern bool fLogTimestamps;
+extern unsigned char uAddressVersion;
 
 void RandAddSeed();
 void RandAddSeedPerfmon();
 int OutputDebugStringF(const char* pszFormat, ...);
 int my_snprintf(char* buffer, size_t limit, const char* format, ...);
-std::string strprintf(const std::string &format, ...);
-bool error(const std::string &format, ...);
+std::string strprintf(const char* format, ...);
+bool error(const char* format, ...);
 void LogException(std::exception* pex, const char* pszThread);
 void PrintException(std::exception* pex, const char* pszThread);
 void PrintExceptionContinue(std::exception* pex, const char* pszThread);
@@ -454,6 +458,22 @@ inline bool GetBoolArg(const std::string& strArg)
     return false;
 }
 
+// GetCharArg(111,"-Subsidy");
+inline unsigned char GetCharArg(unsigned char udefault, const std::string& strArg)
+{   
+    if (mapArgs.count(strArg))
+    {                    
+        unsigned char uvalue;  
+        uvalue = atoi(mapArgs[strArg]);          
+        //stringstream convert(mapArgs[argument]);
+        //if ( !(convert >> uvalue)) 
+        //    uvalue = 0;
+        //printf("argument %s  found in bitcoin.conf with uint %u being used  \n",strArg,uvalue);
+        return uvalue;
+    }
+    //printf("argument %s  NOT found in bitcoin.conf so default uint %u being used  \n",strArg,udefault);
+    return udefault;
+}
 
 
 

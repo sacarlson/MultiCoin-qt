@@ -246,6 +246,9 @@ bool AppInit2(int argc, char* argv[])
     fPrintToDebugger = GetBoolArg("-printtodebugger");
 
     fTestNet = GetBoolArg("-testnet");
+    fTestNet_config = GetBoolArg("-testnet_config");
+    uAddressVersion = GetCharArg(ADDRESSVERSION,"-AddressVerson");
+    
     fNoListen = GetBoolArg("-nolisten");
     fLogTimestamps = GetBoolArg("-logtimestamps");
 
@@ -347,7 +350,8 @@ bool AppInit2(int argc, char* argv[])
     static boost::interprocess::file_lock lock(strLockFile.c_str());
     if (!lock.try_lock())
     {
-        wxMessageBox(strprintf(_("Cannot obtain a lock on data directory %s.  Bitcoin is probably already running."), GetDataDir().c_str()), "Bitcoin");
+        //wxMessageBox(strprintf(_("Cannot obtain a lock on data directory %s.  Bitcoin is probably already running."), GetDataDir().c_str()), "Bitcoin");
+        printf("Cannot obtain a lock on data directory %s.  Bitcoin is probably already running.", GetDataDir().c_str(), "Bitcoin");
         return false;
     }
 
