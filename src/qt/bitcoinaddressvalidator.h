@@ -14,7 +14,7 @@ public:
 
     State validate(QString &input, int &pos) const;
 
-    static const int MaxAddressLength = 34;
+    static const int MaxAddressLength = 44;
 signals:
 
 public slots:
