@@ -12,9 +12,9 @@ WindowTitle="Weeds Wallet"
 CoinName="[WEEDS]"
 
 #in Multicoin-qt this is the name of the graphic icon file displayed in the top left corner of the gui window
-# you must put a compatible graphic image into the :icons/ dir for this to work 
-#(this is untested not sure might need to compile to get the new imaged added to work) 
-#WindowIcon=":icons/weeds"
+# you must put a compatible graphic image into the :icons/ dir for this to work like png 
+#for this to work you will also have to add the image file names to the bitcoin.qrc file and compile
+WindowIcon=:icons/weeds
 
 # temp change to test multicoin-qt with groupcoin spec add header
 #AddressVersion is the 8 bit (char) 0 - 255 header code appended to the first 8 bits of the send address default is 0 for main 111 for testnet 
