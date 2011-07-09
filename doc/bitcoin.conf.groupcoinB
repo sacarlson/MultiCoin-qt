@@ -5,6 +5,17 @@ rpcuser=yourusername
 printtoconsole=1
 testnet=1
 
+#in Multicoin-qt this defineds the title on top of the gui window box
+WindowTitle="GroupCoin Wallet"
+
+#in Multicoin-qt this is the CoinName seen on the top of the gui window
+CoinName="[GRPC]"
+
+#in Multicoin-qt this is the name of the graphic icon file displayed in the top left corner of the gui window
+# you must put a compatible graphic image into the :icons/ dir for this to work 
+#(this is untested not sure might need to compile to get the new imaged added to work) 
+#WindowIcon=":icons/weeds"
+
 #dns=1
 #addnode=www.beertokens.info
 #addnode=192.168.2.158

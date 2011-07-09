@@ -2,12 +2,15 @@
 #define GUIUTIL_H
 
 #include <QString>
+#include "headers.h"
 
 QT_BEGIN_NAMESPACE
 class QFont;
 class QLineEdit;
 class QWidget;
 QT_END_NAMESPACE
+
+
 
 class GUIUtil
 {
