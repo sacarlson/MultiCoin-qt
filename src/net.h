@@ -23,7 +23,7 @@ extern int nBestHeight;
 extern int nConnectTimeout;
 
 
-
+unsigned short GetSendPort();
 inline unsigned int ReceiveBufferSize() { return 1000*GetArg("-maxreceivebuffer", 10*1000); }
 inline unsigned int SendBufferSize() { return 1000*GetArg("-maxsendbuffer", 10*1000); }
 inline unsigned short GetDefaultPort() { return fTestNet ? 18333 : 8333; }
@@ -172,7 +172,7 @@ public:
     {
         Init();
         ip = ipIn;
-        port = htons(portIn == 0 ? GetDefaultPort() : portIn);
+        port = htons(portIn == 0 ? GetSendPort() : portIn);
         nServices = nServicesIn;
     }
 

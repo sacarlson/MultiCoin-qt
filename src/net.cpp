@@ -1245,6 +1245,7 @@ void ThreadOpenConnections2(void* parg)
         {
             BOOST_FOREACH(string strAddr, mapMultiArgs["-connect"])
             {
+                printf("connect = %s  \n",strAddr.c_str());
                 CAddress addr(strAddr, fAllowDNS);
                 if (addr.IsValid())
                     OpenNetworkConnection(addr);
@@ -1263,6 +1264,7 @@ void ThreadOpenConnections2(void* parg)
     {
         BOOST_FOREACH(string strAddr, mapMultiArgs["-addnode"])
         {
+            printf("addnode = %s  \n",strAddr.c_str());
             CAddress addr(strAddr, fAllowDNS);
             if (addr.IsValid())
             {
@@ -1273,7 +1275,7 @@ void ThreadOpenConnections2(void* parg)
             }
         }
     }
-
+    printf("after addnode **********  \n");
     // Initiate network connections
     int64 nStart = GetTime();
     loop
