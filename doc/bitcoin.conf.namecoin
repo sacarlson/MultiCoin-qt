@@ -5,18 +5,6 @@ rpcuser=yourusername
 printtoconsole=1
 testnet=1
 
-#in Multicoin-qt this defineds the title on top of the gui window box
-WindowTitle="NameCoin Wallet"
-
-#in Multicoin-qt this is the CoinName seen on the top of the gui window
-CoinName="[NMC]"
-
-#in Multicoin-qt this is the name of the graphic icon file displayed in the top left corner of the gui window
-# you must put a compatible graphic image into the :icons/ dir for this to work like png 
-#for this to work you will also have to add the image file names to the bitcoin.qrc file and compile
-# I couldn't find any graphic symbol for namecoin so none was added here default will be bitcoin symbol
-#WindowIcon=:icons/namecoin
-
 # to add nodes if needed
 #dns=1
 #addnode=relay.eligius.st
@@ -97,3 +85,8 @@ scriptSig_block_nBits=469794815
 # and  NAME_COIN_GENESIS_EXTRA = 521; but not sure why it also gets ++extra incremented on the line that it's used so try 3 for others
 GenesisBlock_extra=521
 
+#block number at witch time we start to accept merge mining aux chain proof-of-work
+AuxPowStartBlock=24000
+
+# this chain ID number as with bitcoin chainid=0  namecoin chainid=1, at this point I'm not sure if we should set to 1 or 2 or?
+OurChainID=1

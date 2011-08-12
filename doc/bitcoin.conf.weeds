@@ -21,7 +21,9 @@ AddressVerson=243
 
 dns=1
 addnode=www.beertokens.info
-#addnode=192.168.2.158
+addnode=192.168.2.158
+#addnode=69.245.206.209
+addnode=li330-128.members.linode.com
 #addnode=88.077.193.129
 #connect=192.168.2.158
 #noirc=1
@@ -133,6 +135,10 @@ pscMessageStart2=181
 pscMessageStart3=218
 
 
+#block number at witch time we start to accept merge mining aux chain proof-of-work
+AuxPowStartBlock=8000
 
+# this chain ID number as with bitcoin chainid=0  namecoin chainid=1, at this point I'm not sure if we should set to 1 or 2 or?
+OurChainID=3
 
 
