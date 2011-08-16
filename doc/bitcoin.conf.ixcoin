@@ -8,8 +8,19 @@ testnet=1
 dns=1
 addnode=www.beertokens.info
 addnode=192.168.2.158
-addnode=70.173.223.23
-addnode=203.122.241.139
+addnode=177.15.84.66
+addnode=153.225.96.66
+addnode=170.199.106.38
+addnode=178.15.84.66
+
+addnode=173.76.58.192
+addnode=94.230.198.17
+addnode=72.252.240.226
+addnode=220.239.192.229
+addnode=213.91.132.183
+addnode=207.6.240.70
+addnode=174.127.101.53
+addnode=72.234.181.254
 
 #addnode=192.168.2.250
 #connect=192.168.2.158
@@ -60,6 +71,7 @@ check_block=16200
 #check_hash=0x000000004525bb2a5ccbf5c85ce7f2c7a5a2a99a7c079835420fc57a485cdd50
 check_hash=0x00000000000898dc087265c0570a7190b0866c73a8e97c5fe73afb9912b03533
 
+
 #to enable scripts uncomment nonstandard here this overrides IsStandard() to return true
 #nonstandard=1
 
@@ -77,6 +89,9 @@ custom_inflation=1
 Subsidy=96
 #Subsidy_small=0
 
+#added to fix bug in older versions of multicoin that need both Subsidy and post_Subsidy to work with custom_inflation
+inflation_triger=100
+post_Subsidy=96
 
 # pszTimestamp  as seen on front page of New York Times paper to be used here for beerA
 #pszTimestamp=New York Times page1, Aug 1, 2011 President Obama said the accord would “begin to lift the cloud of debt and the cloud of uncertainty that hangs over our economy.”
