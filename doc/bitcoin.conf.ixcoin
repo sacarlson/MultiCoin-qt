@@ -6,21 +6,21 @@ printtoconsole=1
 testnet=1
 
 dns=1
-addnode=www.beertokens.info
-addnode=192.168.2.158
-addnode=177.15.84.66
-addnode=153.225.96.66
-addnode=170.199.106.38
-addnode=178.15.84.66
+#addnode=www.beertokens.info
+#addnode=192.168.2.158
+#addnode=177.15.84.66
+#addnode=153.225.96.66
+#addnode=170.199.106.38
+#addnode=178.15.84.66
 
-addnode=173.76.58.192
-addnode=94.230.198.17
-addnode=72.252.240.226
-addnode=220.239.192.229
-addnode=213.91.132.183
-addnode=207.6.240.70
-addnode=174.127.101.53
-addnode=72.234.181.254
+#addnode=173.76.58.192
+#addnode=94.230.198.17
+#addnode=72.252.240.226
+#addnode=220.239.192.229
+#addnode=213.91.132.183
+#addnode=207.6.240.70
+#addnode=174.127.101.53
+#addnode=72.234.181.254
 
 #addnode=192.168.2.250
 #connect=192.168.2.158
@@ -51,7 +51,7 @@ CoinName="[IXC]"
 AddressVerson=138
 
 #only connect to standard ports assigned at port config or as assigned by testnet or mainnet defaults 
-standard_ports_only=1
+#standard_ports_only=1
 
 #paytxfee=.001
 

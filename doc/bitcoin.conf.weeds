@@ -5,6 +5,9 @@ rpcuser=yourusername
 printtoconsole=1
 testnet=1
 
+#temp test of loading and running a plugin, plugins must be based in ~/datadir/testnet at this time
+plugin=plugin2.so
+
 #in Multicoin-qt this defineds the title on top of the gui window box
 WindowTitle="Weeds Wallet"
 
@@ -35,7 +38,7 @@ portsend=38333
 
 #only connect to standard ports assigned at port or as assigned by testnet or main
 # so as set here we will only accept outgoing connections to port 38333 as set above 
-standard_ports_only=1
+#standard_ports_only=1
 
 # rpcport will also be changed for weeds here
 rpcport=38332
